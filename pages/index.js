@@ -7,59 +7,45 @@ import Link from "next/link";
 import { useApp } from "../context/appContext";
 
 const campaignToIpfs = {
-  title: "TheTestCampaign",
-  description: "Testing 12345",
-  instructions: "Test me here",
+  title: "YouTube Tools",
+  description: "Add chapter time frames to YouTube videos",
+  instructions:
+    "Add chapter start time, end time and chapter title in the text box.",
   template:
-    `<div style="text-align:center">
-  <div className="content">
+    `    <div style="text-align: center">
+    <div className="content">
       <h2>Make chapters for this video 🎬</h2>
-      <iframe height="200" src='` +
+      <iframe
+        height="200"
+        src='` +
     "${video_url}" +
-    `'></iframe>
-      <div style="display:flex;justify-content:center">
-          <div style="flex: 1">Start</div>
-          <input style="flex: 1" type="text" id="inputStart"></input>
+    `'
+      ></iframe>
+      <h3>Chapter List</h3>
+      <div>
+        <textarea id="chapterList"></textarea>
       </div>
-      <div style="display: flex; justify-content:center">
-          <div style="flex: 1">End</div>
-          <input style="flex: 1 " type="text" id="inputEnd"></input>
-      </div>
-      <div style="display: flex; justify-content: center">
-          <div style="flex: 1">Title</div>
-          <input style="flex: 1" type="text" id="inputTitle"></input>
-      </div>
-      <div style="display:flex; justify-content: center">
-          <button onclick="addChapter();">Add</button>
-      </div>
-      <h4>Chapter List</h4>
-      <div style="
-        display: flex;
-        align-items:center;
-        flex-direction:column;" id="chapterList">
-      </div>
-      <script>
-          function addChapter() {
-              let titleText = document.getElementById("inputTitle").value;
-              let startText = document.getElementById("inputStart").value;
-              let endText = document.getElementById("inputEnd").value;
-              let newChapter = "<div style='display:flex; align-items:center; flex-direction:colomn'><div style='padding-right: 5px'>" + titleText + ":</div><div>" + startText + " - " + "</div> <div>" + endText + "</div></div>";
-              alert(newChapter);
-              document.getElementById("chapterList").insertAdjacentHTML('beforeend', newChapter);
-          }
-          
-      </script>
-  </div>
-</div>`,
+      <form>
+        <div
+          style="display: flex; align-items: center; flex-direction: column"
+          id="chapterList"
+        ></div>
+        <button type="submit" class="button is-primary is-large mt-6">
+          Submit
+        </button>
+      </form>
+      <link
+        href="https://app.effect.network/force-defaults.css"
+        rel="stylesheet"
+      />
+    </div>
+  </div>`,
   image:
     "https://ipfs.effect.ai/ipfs/bafkreiggnttdaxleeii6cdt23i4e24pfcvzyrndf5kzfbqgf3fxjryj5s4",
   category: "Video Chapters",
   example_task: {
     video_url: "https://www.youtube.com/embed/xx8QEtZQieI",
   },
-  tasks: [{ video_url: "https://www.youtube.com/embed/xx8QEtZQieI" }],
-  version: 1,
-  reward: 1,
 };
 
 export default function Home() {
@@ -74,11 +60,11 @@ export default function Home() {
           const accounts = await window.ethereum.request({
             method: "eth_requestAccounts",
           });
-          const client = new effectsdk.EffectClient("jungle");
+          const client = new effectsdk.EffectClient("mainnet");
           const effectAccount = await client.connectAccount(web3);
-          // login(effectAccount.accountName);
-          // console.log(effectAccount);
-          // // return web3;
+          login(effectAccount.accountName);
+          console.log(effectAccount);
+          // return web3;
           // const campaign = await client.force.getMyLastCampaign();
           // if (campaign.id > 0) {
           //   setAddBatch(true);
@@ -151,12 +137,9 @@ export default function Home() {
               </button>
             )}
             {cxtAddress && (
-              <button
-                className="btn btn-primary"
-                onClick={() => onCreateWithMetamask()}
-              >
-                Create
-              </button>
+              <Link href="/create">
+                <button className="btn btn-primary">Create</button>
+              </Link>
             )}
           </div>
         </div>

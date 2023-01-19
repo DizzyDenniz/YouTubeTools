@@ -37,24 +37,24 @@ export default function Create() {
         const accounts = await window.ethereum.request({
           method: "eth_requestAccounts",
         });
-        const client = new effectsdk.EffectClient("jungle");
+        const client = new effectsdk.EffectClient("mainnet");
         const effectAccount = await client.connectAccount(web3);
         login(effectAccount.accountName);
         console.log(effectAccount);
-        const makeCampaign = await client.force.makeCampaign(
-          campaignToIpfs,
-          "1"
-        );
-        console.log(makeCampaign);
+        const content = {
+          tasks: { youtube_url: "https://www.youtube.com/embed/xx8QEtZQieI" },
+        };
+        // const content = { tasks: { youtube_url: `'` + youtubeUrl + `'` } };
+        await client.force.createBatch(53, content, 1);
       } catch (error) {
         console.error(error);
       }
     }
   };
 
-  useEffect(() => {
-    getMyLastCampaign();
-  }, []);
+  // useEffect(() => {
+  //   getMyLastCampaign();
+  // }, []);
 
   useEffect(() => {
     if (addBatch) {
