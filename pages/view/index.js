@@ -1,104 +1,57 @@
-import Head from "next/head";
-import Image from "next/image";
-import * as effectsdk from "@effectai/effect-js";
-import Web3 from "web3";
-import { useContext, useState } from "react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useApp } from "../../context/appContext";
+import Web3 from "web3";
+import * as effectsdk from "@effectai/effect-js";
 
-const campaignToIpfs = {
-  title: "TheTestCampaign",
-  description: "Testing 12345",
-  instructions: "Test me here",
-  template:
-    `<div style="text-align:center">
-  <div className="content">
-      <h2>Make chapters for this video 🎬</h2>
-      <iframe height="200" src='` +
-    "${video_url}" +
-    `'></iframe>
-      <div style="display:flex;justify-content:center">
-          <div style="flex: 1">Start</div>
-          <input style="flex: 1" type="text" id="inputStart"></input>
-      </div>
-      <div style="display: flex; justify-content:center">
-          <div style="flex: 1">End</div>
-          <input style="flex: 1 " type="text" id="inputEnd"></input>
-      </div>
-      <div style="display: flex; justify-content: center">
-          <div style="flex: 1">Title</div>
-          <input style="flex: 1" type="text" id="inputTitle"></input>
-      </div>
-      <div style="display:flex; justify-content: center">
-          <button onclick="addChapter();">Add</button>
-      </div>
-      <h4>Chapter List</h4>
-      <div style="
-        display: flex;
-        align-items:center;
-        flex-direction:column;" id="chapterList">
-      </div>
-      <script>
-          function addChapter() {
-              let titleText = document.getElementById("inputTitle").value;
-              let startText = document.getElementById("inputStart").value;
-              let endText = document.getElementById("inputEnd").value;
-              let newChapter = "<div style='display:flex; align-items:center; flex-direction:colomn'><div style='padding-right: 5px'>" + titleText + ":</div><div>" + startText + " - " + "</div> <div>" + endText + "</div></div>";
-              alert(newChapter);
-              document.getElementById("chapterList").insertAdjacentHTML('beforeend', newChapter);
-          }
-          
-      </script>
-  </div>
-</div>`,
-  image:
-    "https://ipfs.effect.ai/ipfs/bafkreiggnttdaxleeii6cdt23i4e24pfcvzyrndf5kzfbqgf3fxjryj5s4",
-  category: "Video Chapters",
-  example_task: {
-    video_url: "https://www.youtube.com/embed/xx8QEtZQieI",
-  },
-  tasks: [{ video_url: "https://www.youtube.com/embed/xx8QEtZQieI" }],
-  version: 1,
-  reward: 1,
-};
-
-export default function Home() {
-  const [address, setAddress] = useState();
+export default function Create() {
   const { cxtAddress, login } = useApp();
-  const buttonClick = async () => {
-    try {
-      const { ethereum } = window;
-      if (ethereum) {
-        const web3 = new Web3(ethereum);
-        try {
-          const accounts = await window.ethereum.request({
-            method: "eth_requestAccounts",
-          });
-          const client = new effectsdk.EffectClient("jungle");
-          const effectAccount = await client.connectAccount(web3);
-          login(effectAccount.accountName);
-          console.log(effectAccount);
-          return web3;
-        } catch (error) {
-          console.error(error);
-        }
+  const [youtubeUrl, setYoutubeUrl] = useState();
+  const [addBatch, setAddBatch] = useState(false);
+
+  const fetchTasks = async () => {
+    const { ethereum } = window;
+    if (ethereum) {
+      const web3 = new Web3(ethereum);
+      try {
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+        const client = new effectsdk.EffectClient("mainnet");
+        const effectAccount = await client.connectAccount(web3);
+        login(effectAccount.accountName);
+        const content = {
+          tasks: { youtube_url: "https://www.youtube.com/embed/xx8QEtZQieI" },
+        };
+        const submission = await client.force.getBatchId(1, 5);
+        const submission1 = await client.force.getBatches(21474836481, 10);
+
+        console.log(submission);
+        console.log(submission1);
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.log(error);
     }
   };
-  const onCreate = async () => {
+
+  const onYouTubeUrlChange = (url) => {
+    let text = url.substr(32, 11);
+    setYoutubeUrl(text);
+  };
+
+  const getMyLastCampaign = async () => {
+    const web3 = new Web3(ethereum);
+    const accounts = await window.ethereum.request({
+      method: "eth_requestAccounts",
+    });
     const client = new effectsdk.EffectClient("jungle");
-    const account = effectsdk.createAccount("");
-    console.log(account);
-    const web3 = effectsdk.createWallet(account);
     const effectAccount = await client.connectAccount(web3);
-    console.log(effectAccount);
-    //const uploadData = getUploadData();
-    // console.log(uploadCampaignIpfs);
-    //const campaign = await client.force.getMyLastCampaign();
-    const makeCampaign = await client.force.makeCampaign(campaignToIpfs, "1");
-    console.log(makeCampaign);
+    login(effectAccount.accountName);
+    const campaign = await client.force.getMyLastCampaign();
+    if (campaign.id > 0) {
+      setAddBatch(true);
+    }
+    // await client.force.createBatch(campaign.id, content, repetitions);
   };
 
   const onCreateWithMetamask = async () => {
@@ -109,115 +62,43 @@ export default function Home() {
         const accounts = await window.ethereum.request({
           method: "eth_requestAccounts",
         });
-        const client = new effectsdk.EffectClient("jungle");
+        const client = new effectsdk.EffectClient("mainnet");
         const effectAccount = await client.connectAccount(web3);
         login(effectAccount.accountName);
         console.log(effectAccount);
-        const makeCampaign = await client.force.makeCampaign(
-          campaignToIpfs,
-          "1"
-        );
-        console.log(makeCampaign);
+        const content = {
+          tasks: { youtube_url: "https://www.youtube.com/embed/xx8QEtZQieI" },
+        };
+        // const content = { tasks: { youtube_url: `'` + youtubeUrl + `'` } };
+        await client.force.createBatch(53, content, 1);
       } catch (error) {
         console.error(error);
       }
     }
   };
+
+  // useEffect(() => {
+  //   getMyLastCampaign();
+  // }, []);
+
+  useEffect(() => {
+    if (addBatch) {
+      onCreateWithMetamask();
+    }
+  }, [addBatch]);
+
+  //TODO
+  // check for last campaign
+  // if there is not a campaign create a new campaign
+  // else add batches to campaign
+
   return (
     <div>
-      <Head>
-        <title>YouTube Tools</title>
-        <meta name="description" content="Generated by create next app" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
       <div className="navbar bg-base-100 fixed">
         <div className="navbar-start">
-          <div className="dropdown">
-            <label tabIndex={0} className="btn btn-ghost lg:hidden">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h8m-8 6h16"
-                />
-              </svg>
-            </label>
-            <ul
-              tabIndex={0}
-              className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"
-            >
-              <li>
-                <a>Item 1</a>
-              </li>
-              <li tabIndex={0}>
-                <a className="justify-between">
-                  Parent
-                  <svg
-                    className="fill-current"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
-                  </svg>
-                </a>
-                <ul className="p-2">
-                  <li>
-                    <a>Submenu 1</a>
-                  </li>
-                  <li>
-                    <a>Submenu 2</a>
-                  </li>
-                </ul>
-              </li>
-              <li>
-                <a>Item 3</a>
-              </li>
-            </ul>
-          </div>
           <Link href={"/"} legacyBehavior>
             <a className="btn btn-ghost normal-case text-xl">YouTube Tools</a>
           </Link>
-        </div>
-        <div className="navbar-center hidden lg:flex">
-          <ul className="menu menu-horizontal px-1">
-            <li>
-              <a>Item 1</a>
-            </li>
-            <li tabIndex={0}>
-              <a>
-                Parent
-                <svg
-                  className="fill-current"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
-                </svg>
-              </a>
-              <ul className="p-2">
-                <li>
-                  <a>Submenu 1</a>
-                </li>
-                <li>
-                  <a>Submenu 2</a>
-                </li>
-              </ul>
-            </li>
-            <li>
-              <a>Item 3</a>
-            </li>
-          </ul>
         </div>
 
         <div className="navbar-end">
@@ -230,30 +111,64 @@ export default function Home() {
           )}
         </div>
       </div>
-      <div className="hero min-h-screen bg-base-200">
-        <div className="hero-content text-center">
-          <div className="max-w-md">
-            <h1 className="text-5xl font-bold">
-              Crowdsource your YouTube tasks
-            </h1>
-            <p className="py-6">
-              Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda
-              excepturi exercitationem quasi. In deleniti eaque aut repudiandae
-              et a id nisi.
-            </p>
-            {!cxtAddress && (
-              <button className="btn btn-primary" onClick={() => buttonClick()}>
-                Sign in
-              </button>
-            )}
-            {cxtAddress && (
-              <button
-                className="btn btn-primary"
-                onClick={() => onCreateWithMetamask()}
-              >
-                Create
-              </button>
-            )}
+      <div className="flex">
+        <div className="flex mt-16 min-h-full min-w-full">
+          <ul className="menu bg-base-100 w-56 p-2">
+            <li>
+              <Link href="/create">Create</Link>
+            </li>
+            <li>
+              <Link href="/view">View</Link>
+            </li>
+          </ul>
+          <div className="w-full rounded-md m-4 flex-col">
+            <div className="text-center text-3xl my-2 font-bold">
+              View Tasks
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="table w-full">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Reward</th>
+                  </tr>
+                </thead>
+                {/* <tbody>
+                  <tr>
+                    <th>1</th>
+                    <td>Cy Ganderton</td>
+                    <td>Quality Control Specialist</td>
+                    <td>Blue</td>
+                  </tr>
+                  <tr>
+                    <th>2</th>
+                    <td>Hart Hagerty</td>
+                    <td>Desktop Support Technician</td>
+                    <td>Purple</td>
+                  </tr>
+                  <tr>
+                    <th>3</th>
+                    <td>Brice Swyre</td>
+                    <td>Tax Accountant</td>
+                    <td>Red</td>
+                  </tr>
+                </tbody> */}
+              </table>
+            </div>
+            <div className="w-full flex justify-center">
+              <div className="btn-group grid grid-cols-2 w-60">
+                <button className="btn btn-outline">Previous</button>
+                <button
+                  className="btn btn-outline"
+                  onClick={() => fetchTasks()}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

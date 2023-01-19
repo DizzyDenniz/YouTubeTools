@@ -14,58 +14,33 @@ export default function Create() {
     setYoutubeUrl(text);
   };
 
-  const getMyLastCampaign = async () => {
-    const web3 = new Web3(ethereum);
-    const accounts = await window.ethereum.request({
-      method: "eth_requestAccounts",
-    });
-    const client = new effectsdk.EffectClient("jungle");
-    const effectAccount = await client.connectAccount(web3);
-    login(effectAccount.accountName);
-    const campaign = await client.force.getMyLastCampaign();
-    if (campaign.id > 0) {
-      setAddBatch(true);
-    }
-    // await client.force.createBatch(campaign.id, content, repetitions);
-  };
-
   const onCreateWithMetamask = async () => {
-    const { ethereum } = window;
-    if (ethereum) {
-      const web3 = new Web3(ethereum);
-      try {
-        const accounts = await window.ethereum.request({
-          method: "eth_requestAccounts",
-        });
-        const client = new effectsdk.EffectClient("mainnet");
-        const effectAccount = await client.connectAccount(web3);
-        login(effectAccount.accountName);
-        console.log(effectAccount);
-        const content = {
-          tasks: { youtube_url: "https://www.youtube.com/embed/xx8QEtZQieI" },
-        };
-        // const content = { tasks: { youtube_url: `'` + youtubeUrl + `'` } };
-        await client.force.createBatch(53, content, 1);
-      } catch (error) {
-        console.error(error);
-      }
+    try {
+      const account = effectsdk.createAccount(
+        process.env.NEXT_PUBLIC_PRIVATE_KEY
+      );
+      const web3 = effectsdk.createWallet(account);
+      const client = new effectsdk.EffectClient("mainnet");
+      const effectAccount = await client.connectAccount(web3);
+      const content = {
+        tasks: [
+          {
+            youtube_url: "https://www.youtube.com/embed/" + youtubeUrl,
+            link_id: "1",
+          },
+        ],
+      };
+      await client.force.createBatch(53, content, 1);
+    } catch (error) {
+      console.error(error);
     }
   };
-
-  // useEffect(() => {
-  //   getMyLastCampaign();
-  // }, []);
 
   useEffect(() => {
     if (addBatch) {
       onCreateWithMetamask();
     }
   }, [addBatch]);
-
-  //TODO
-  // check for last campaign
-  // if there is not a campaign create a new campaign
-  // else add batches to campaign
 
   return (
     <div>
